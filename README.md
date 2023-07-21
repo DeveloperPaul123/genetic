@@ -9,12 +9,13 @@ A flexible and performant implementation of the genetic algorithm in C++20/23.
 
 ## Features
 
-* Built entirely with C++20/23
-* Supply your own functions for:
-    * Selection
-    * Crossover
-    * Mutation
-    * Fitness
+- Built entirely with C++20/23
+- Supply your own functions for:
+    - Selection
+    - Crossover
+    - Mutation
+    - Fitness
+    - Termination
 
 ## Integration
 
@@ -45,15 +46,63 @@ CPMAddPackage(
 
 ## Usage
 
-Simple example:
+[Knapsack problem](https://en.wikipedia.org/wiki/Knapsack_problem) example:
 
-🚧
+```cpp
 
-You can see other examples in the `/examples` folder.
+struct knapsack_box {
+    int value;
+    int weight;
+    auto operator<=>(const knapsack_box&) const = default;
+};
 
-## Benchmarks 
+// weight capacity of our knapsack
+constexpr auto max_weight = 15;
 
-🚧
+// available boxes for the knapsack
+std::vector<knapsack_box> available_items = {{4, 12}, {2, 1}, {10, 4}, {1, 1}, {2, 2}};
+
+// fitness evaluator (omitted for brevity)
+auto fitness = { // ...};
+
+// random mutation operator (omitted for brevity)
+auto mutator = { // ... };
+
+// crossover operator (i.e. child generator, omitted for brevity)
+auto crossover = { // ... };
+
+// the solution is all the boxes except for the heaviest one.
+const knapsack solution = {-1, 1, 2, 3, 4};
+const knapsack all_items = {0, 1, 2, 3, 4};
+
+// genetic algorithm settings.
+constexpr dp::genetic::algorithm_settings settings{0.1, 0.5, 0.25};
+
+// generate an initial random population
+constexpr auto population_size = 2;
+std::vector<knapsack> initial_population{};  // TODO: Generate initial population
+initial_population.reserve(population_size);
+
+// generate the initial population
+std::ranges::generate_n(std::back_inserter(initial_population), population_size,
+                        knapsack_generator);
+
+// define the termination criteria
+auto termination = dp::genetic::fitness_termination_criteria(fitness(solution));
+
+// setup the params object for the algorithm
+auto params = dp::genetic::params<knapsack>::builder()
+                    .with_mutation_operator(mutator)
+                    .with_crossover_operator(crossover)
+                    .with_fitness_operator(fitness)
+                    .with_termination_operator(termination)
+                    .build();
+
+auto [best, fitness] = dp::genetic::solve(initial_population, settings, params);
+
+```
+
+For more details see the `/examples` folder and the unit tests under `/test`.
 
 ## Building
 
