@@ -5,7 +5,9 @@
 #include "genetic/details/concepts.h"
 
 namespace dp::genetic {
-
+    /**
+     * @brief No-op mutator, returns the value unchanged.
+     */
     struct noop_mutator {
         template <typename T>
         constexpr T operator()(const T& value) const {
@@ -13,6 +15,11 @@ namespace dp::genetic {
         }
     };
 
+    /**
+     * @brief Replaces n values at random locations in the  from a range of possible values.
+     * @tparam T Population type
+     * @tparam IndexGenerator Random number generator that generates indices
+     */
     template <std::ranges::range T, dp::genetic::concepts::index_generator IndexGenerator =
                                         dp::genetic::uniform_integral_generator>
     struct value_replacement_mutator {
@@ -50,6 +57,12 @@ namespace dp::genetic {
         std::size_t replacement_count_;
     };
 
+    /**
+     * @brief Inserts n values at random positions by randomly selecting values from the input
+     * range.
+     * @tparam T Population type
+     * @tparam IndexGenerator Random number generator that generates indices
+     */
     template <std::ranges::range T, dp::genetic::concepts::index_generator IndexGenerator =
                                         dp::genetic::uniform_integral_generator>
     struct value_insertion_mutator {
@@ -107,8 +120,8 @@ namespace dp::genetic {
       public:
         explicit composite_mutator(Args&&... args) : mutators_(std::forward<Args>(args)...) {}
         template <typename T>
-        T operator()(T&& t) {
-            return call_helper<sizeof...(Args)>(std::forward<T>(t));
+        T operator()(T t) {
+            return call_helper<sizeof...(Args)>(t);
         }
     };
 }  // namespace dp::genetic

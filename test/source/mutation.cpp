@@ -3,6 +3,19 @@
 
 #include <iostream>
 
+static_assert(dp::genetic::concepts::mutation_operator<dp::genetic::noop_mutator, std::string>);
+static_assert(dp::genetic::concepts::mutation_operator<dp::genetic::noop_mutator, int>);
+static_assert(dp::genetic::concepts::mutation_operator<dp::genetic::noop_mutator, double>);
+
+static_assert(dp::genetic::concepts::mutation_operator<
+              dp::genetic::composite_mutator<
+                  dp::genetic::value_insertion_mutator<std::vector<std::string>>>,
+              std::string>);
+static_assert(
+    dp::genetic::concepts::mutation_operator<
+        dp::genetic::composite_mutator<dp::genetic::value_insertion_mutator<std::vector<int>>>,
+        std::vector<int>>);
+
 TEST_CASE("Value replacement mutator") {
     const std::string alphabet = R"(abcdefghijklmnopqrstuvwxyz)";
     dp::genetic::value_replacement_mutator<std::string> mutator{alphabet};

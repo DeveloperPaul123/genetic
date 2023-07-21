@@ -3,7 +3,8 @@
 namespace dp::genetic {
 
     struct generations_termination_criteria {
-        explicit generations_termination_criteria(std::size_t max_generations = 1000)
+        generations_termination_criteria() = default;
+        explicit generations_termination_criteria(const std::size_t max_generations)
             : count_(max_generations) {}
         template <typename T>
         bool operator()(T, double) {
@@ -12,7 +13,7 @@ namespace dp::genetic {
         }
 
       private:
-        std::size_t count_;
+        std::size_t count_{1000};
     };
 
     struct fitness_termination_criteria {

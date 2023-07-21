@@ -41,7 +41,7 @@ TEST_CASE("Search for string") {
     constexpr auto initial_pop_size = 1000;
     std::vector<std::string> initial_population(initial_pop_size);
     std::generate_n(initial_population.begin(), initial_pop_size,
-                    [&]() { return word_generator(available_chars, word_length); });
+                    [&] { return word_generator(available_chars, word_length); });
 
     // fitness evaluator
     dp::genetic::element_wise_comparison fitness_op(solution);
@@ -66,7 +66,7 @@ TEST_CASE("Search for string") {
         dp::genetic::concepts::selection_operator<dp::genetic::rank_selection, std::string,
                                                   std::vector<std::string>, decltype(fitness_op)>);
     // algorithm settings
-    dp::genetic::algorithm_settings settings{0.1, 0.5, 0.25};
+    dp::genetic::algorithm_settings settings{0.3, 0.6, 0.3};
     dp::genetic::params<std::string> params =
         dp::genetic::params<std::string>::builder()
             .with_mutation_operator(string_mutator)
@@ -74,14 +74,13 @@ TEST_CASE("Search for string") {
             .with_fitness_operator(fitness_op)
             .with_termination_operator(termination)
             .build();
-    // set up algorithm
-    dp::genetic_algorithm genetics(settings, params);
 
     auto start = std::chrono::steady_clock::now();
-    auto [best, fitness] = genetics.solve(initial_population, [](auto& stats) {
-        std::cout << "best: " << stats.current_best.best
-                  << " fitness: " << stats.current_best.fitness << "\n";
-    });
+    auto [best, fitness] =
+        dp::genetic::solve(initial_population, settings, params, [](const auto& stats) {
+            std::cout << "best: " << stats.current_best.best
+                      << " fitness: " << stats.current_best.fitness << "\n";
+        });
     auto stop = std::chrono::steady_clock::now();
     auto time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
     std::cout << "Total time (ms): " << std::to_string(time_ms) << "\n";
@@ -266,12 +265,11 @@ TEST_CASE("Knapsack problem") {
                       .with_termination_operator(termination)
                       .build();
 
-    dp::genetic_algorithm genetics(settings, params);
-
     auto start = std::chrono::steady_clock::now();
-    auto [best, _] = genetics.solve(initial_population, [](auto& stats) {
+    auto [best, _] = dp::genetic::solve(initial_population, settings, params, [](auto& stats) {
         std::cout << "best: " << stats.current_best.best
-                  << " fitness: " << stats.current_best.fitness << "\n";
+                  << " fitness: " << stats.current_best.fitness
+                  << " pop size: " << std::to_string(stats.current_generation_count) << "\n";
     });
     auto stop = std::chrono::steady_clock::now();
     auto time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();

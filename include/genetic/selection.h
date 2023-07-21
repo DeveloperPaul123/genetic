@@ -24,7 +24,7 @@ namespace dp::genetic {
                                                     return current_sum + fitness_op(value);
                                                 });
 
-            static thread_local auto generator = dp::genetic::uniform_floating_point_generator{};
+            thread_local auto generator = uniform_floating_point_generator{};
             auto first_value = generator(0.0, 1.0);
             auto second_value = generator(0.0, 1.0);
 
@@ -70,11 +70,9 @@ namespace dp::genetic {
                     static_cast<double>(std::distance(reverse_view.begin(), location)) + 1.0);
             };
 
-            // use roulette selection
-            return selection_(reverse_view, rank_fitness_op);
+            roulette_selection selection{};
+            // use roulette selection for the rest
+            return selection(reverse_view, rank_fitness_op);
         }
-
-      private:
-        roulette_selection selection_{};
     };
 }  // namespace dp::genetic

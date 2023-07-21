@@ -8,6 +8,13 @@
 
 using namespace dp::genetic;
 
+// cross over concept checks
+static_assert(concepts::crossover_operator<default_crossover, std::string>);
+static_assert(concepts::crossover_operator<default_crossover, int>);
+static_assert(concepts::crossover_operator<default_crossover, std::array<int, 4>>);
+static_assert(concepts::crossover_operator<default_crossover, std::vector<int>>);
+static_assert(concepts::crossover_operator<default_crossover, std::vector<std::string>>);
+
 TEST_CASE("Test generic cross technique") {
     constexpr auto first_point = 2;
     constexpr auto second_point = 4;
@@ -59,11 +66,3 @@ TEST_CASE("Test default crossover operator") {
 
     std::cout << child1 << '\n' << child2 << '\n' << std::endl;
 }
-
-// cross over concept checks
-static_assert(dp::genetic::concepts::crossover_operator<default_crossover, std::string>);
-static_assert(dp::genetic::concepts::crossover_operator<default_crossover, int>);
-static_assert(dp::genetic::concepts::crossover_operator<default_crossover, std::array<int, 4>>);
-static_assert(dp::genetic::concepts::crossover_operator<default_crossover, std::vector<int>>);
-static_assert(
-    dp::genetic::concepts::crossover_operator<default_crossover, std::vector<std::string>>);
