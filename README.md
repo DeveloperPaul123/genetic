@@ -10,23 +10,23 @@ A flexible and performant implementation of the genetic algorithm in C++20/23.
 ## Features
 
 - Built entirely with C++20/23
-- Supply your own functions for:
-    - Selection
-    - Crossover
-    - Mutation
-    - Fitness
-    - Termination
+- Supply your own operations for:
+  - Selection
+  - Crossover
+  - Mutation
+  - Fitness
+  - Termination
 
 ## Integration
 
-`dp::genetic` is a header only library. All the files needed are in `include/genetic`. 
+`dp::genetic` is a header only library. All the files needed are in `include/genetic`.
 
 ### CMake
 
 `genetic` defines two CMake targets:
 
-* `Genetic::Genetic`
-* `dp::genetic`
+- `Genetic::Genetic`
+- `dp::genetic`
 
 You can then use `find_package()`:
 
@@ -108,10 +108,10 @@ For more details see the `/examples` folder and the unit tests under `/test`.
 
 This project has been built with:
 
-* Visual Studio 2022
-* Clang `10.+` (via WSL on Windows)
-* GCC `11.+` (vis WSL on Windows)
-* CMake `3.21+`
+- Visual Studio 2022
+- Clang `10.+` (via WSL on Windows)
+- GCC `11.+` (vis WSL on Windows)
+- CMake `3.21+`
 
 To build, run:
 
@@ -124,8 +124,8 @@ cmake --build build
 
 | Option | Description | Default |
 |:-------|:------------|:--------:|
-| `GENETIC_BUILD_TESTS` | Turn on to build unit tests. Required for formatting build targets. | ON |
-| `GENETIC_BUILD_EXAMPLES` | Turn on to build examples | ON |
+| `DP_GENETIC_BUILD_TESTS` | Turn on to build unit tests. Required for formatting build targets. | ON |
+| `DP_GENETIC_BUILD_EXAMPLES` | Turn on to build examples | ON |
 
 ### Run clang-format
 
