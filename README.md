@@ -110,7 +110,7 @@ This project has been built with:
 
 - Visual Studio 2022
 - Clang `10.+` (via WSL on Windows)
-- GCC `11.+` (vis WSL on Windows)
+- GCC `11.+` (via WSL on Windows)
 - CMake `3.21+`
 
 To build, run:
@@ -139,7 +139,6 @@ cmake --build build/test --target format
 # apply changes
 cmake --build build/test --target fix-format
 ```
-
 See [Format.cmake](https://github.com/TheLartians/Format.cmake) for details.
 
 ### Build the documentation
@@ -154,7 +153,7 @@ cmake --build build/doc --target GenerateDocs
 open build/doc/doxygen/html/index.html
 ```
 
-To build the documentation locally, you will need Doxygen and Graphviz on your system.
+To build the documentation locally, you will need [Doxygen](https://www.doxygen.nl/) and [Graphviz](https://graphviz.org/) on your system.
 
 ## Contributing
 
