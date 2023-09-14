@@ -17,20 +17,22 @@ namespace dp::genetic {
         }
     }  // namespace details
 
+    // TODO: Add a way to inject a random device and/or how to initialize it
     struct uniform_integral_generator {
         template <std::integral T, typename RandomDevice = std::mt19937>
         auto operator()(const T &lower_bound, const T &upper_bound) {
             // generate random crossover points
-            static thread_local auto device = details::initialize_random_engine<RandomDevice>();
+            thread_local auto device = details::initialize_random_engine<RandomDevice>();
             std::uniform_int_distribution<T> dist(lower_bound, upper_bound);
             return dist(device);
         }
     };
 
+    // TODO: Add a way to inject a random device and/or how to initialize it
     struct uniform_floating_point_generator {
         template <std::floating_point T, typename RandomDevice = std::mt19937>
         auto operator()(const T &lower_bound, const T &upper_bound) {
-            static thread_local auto device = details::initialize_random_engine<RandomDevice>();
+            thread_local auto device = details::initialize_random_engine<RandomDevice>();
             std::uniform_real_distribution<T> dist(lower_bound, upper_bound);
             return dist(device);
         }
