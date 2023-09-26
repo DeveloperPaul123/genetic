@@ -132,7 +132,10 @@ namespace dp {
                                 auto chromosomes_only_view = pop | std::views::elements<0> |
                                                              std::ranges::to<PopulationType>();
                                 auto [parent1, parent2] = prms.selection_operator()(
-                                    chromosomes_only_view, prms.fitness_operator());
+                                    chromosomes_only_view, [&prms](const auto& values) {
+                                        return genetic::evaluate_fitness(values,
+                                                                         prms.fitness_operator());
+                                    });
 
                                 // generate two children from each parent sets
                                 auto child1 = prms.crossover_operator()(parent1, parent2);

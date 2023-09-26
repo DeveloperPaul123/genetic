@@ -1,5 +1,7 @@
 #pragma once
+
 #include <random>
+#include <algorithm>
 
 #include "details/random_helpers.h"
 #include "genetic/details/concepts.h"
@@ -16,7 +18,7 @@ namespace dp::genetic {
     };
 
     /**
-     * @brief Replaces n values at random locations in the  from a range of possible values.
+     * @brief Replaces n values at random locations in the from a range of possible values.
      * @tparam T Population type
      * @tparam IndexGenerator Random number generator that generates indices
      */

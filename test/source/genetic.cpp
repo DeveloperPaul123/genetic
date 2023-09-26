@@ -2,6 +2,7 @@
 #include <genetic/crossover.h>
 #include <genetic/details/concepts.h>
 #include <genetic/genetic.h>
+#include <genetic/mutation.h>
 #include <genetic/selection.h>
 #include <genetic/termination.h>
 
@@ -13,79 +14,6 @@
 #include <iostream>
 #include <random>
 #include <string>
-
-struct random_word_generator {
-    [[nodiscard]] std::string operator()(std::string_view char_set, std::size_t max_length) const {
-        static thread_local auto generator = dp::genetic::uniform_integral_generator{};
-        const auto& out_length = generator(static_cast<std::size_t>(1), max_length);
-        std::string out(out_length, '\0');
-        std::generate_n(out.begin(), out_length,
-                        [&]() { return char_set[generator(std::size_t{0}, char_set.size() - 1)]; });
-        return out;
-    }
-};
-
-TEST_CASE("Search for string") {
-    // solution
-    const std::string solution = "Hello, world!";
-
-    // define available characters
-    const std::string alphabet = R"(abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!,.)";
-    const std::string available_chars = alphabet + " ,'";
-
-    const auto word_length = solution.size() + solution.size() / 2;
-
-    // generate random words as our initial population
-    random_word_generator word_generator{};
-    // generate initial population
-    constexpr auto initial_pop_size = 1000;
-    std::vector<std::string> initial_population(initial_pop_size);
-    std::generate_n(initial_population.begin(), initial_pop_size,
-                    [&] { return word_generator(available_chars, word_length); });
-
-    // fitness evaluator
-    dp::genetic::element_wise_comparison fitness_op(solution);
-
-    auto string_mutator = dp::genetic::composite_mutator{
-        [&](const std::string& input) {
-            if (input.empty()) {
-                return word_generator(available_chars, word_length);
-            }
-            return input;
-        },
-        dp::genetic::value_replacement_mutator<std::string>{available_chars}};
-
-    // termination criteria
-    auto termination = dp::genetic::fitness_termination_criteria(fitness_op(solution));
-
-    static_assert(
-        dp::genetic::concepts::termination_operator<dp::genetic::fitness_termination_criteria,
-                                                    std::string, double>);
-
-    static_assert(
-        dp::genetic::concepts::selection_operator<dp::genetic::rank_selection, std::string,
-                                                  std::vector<std::string>, decltype(fitness_op)>);
-    // algorithm settings
-    dp::genetic::algorithm_settings settings{0.3, 0.6, 0.3};
-    dp::genetic::params<std::string> params =
-        dp::genetic::params<std::string>::builder()
-            .with_mutation_operator(string_mutator)
-            .with_crossover_operator(dp::genetic::default_crossover{})
-            .with_fitness_operator(fitness_op)
-            .with_termination_operator(termination)
-            .build();
-
-    auto start = std::chrono::steady_clock::now();
-    auto [best, fitness] =
-        dp::genetic::solve(initial_population, settings, params, [](const auto& stats) {
-            std::cout << "best: " << stats.current_best.best
-                      << " fitness: " << stats.current_best.fitness << "\n";
-        });
-    auto stop = std::chrono::steady_clock::now();
-    auto time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
-    std::cout << "Total time (ms): " << std::to_string(time_ms) << "\n";
-    CHECK(best == solution);
-}
 
 // type declaration for knapsack problem
 using knapsack = std::array<int, 5>;
@@ -112,7 +40,7 @@ TEST_CASE("Knapsack problem") {
     // weight capacity of our knapsack
     constexpr auto max_weight = 15;
 
-    // available boxes for the knapsack
+    // available boxes for the knapsack : {value, weight}
     std::vector<knapsack_box> available_items = {{4, 12}, {2, 1}, {10, 4}, {1, 1}, {2, 2}};
 
     // fitness evaluator
@@ -130,8 +58,7 @@ TEST_CASE("Knapsack problem") {
         return value_sum;
     };
 
-    std::random_device device;
-    std::mt19937 engine(device());
+    auto engine = dp::genetic::details::initialize_random_engine<std::mt19937>();
 
     // random mutation operator
     auto mutator = [&engine, &available_items](const knapsack& ks) {
@@ -277,4 +204,57 @@ TEST_CASE("Knapsack problem") {
     // sort the best to match against the solution
     std::ranges::sort(best);
     CHECK(best == solution);
+}
+
+TEST_CASE("Beale function") {
+    using data_t = std::array<double, 2>;
+    const auto fitness = [](const data_t& value) -> double {
+        const auto x = value[0];
+        const auto y = value[1];
+        // multiply by -1 to maximize the function
+        const auto xy = x * y;
+        const auto y_squared = std::pow(y, 2);
+        const auto y_cubed = std::pow(y, 3);
+        return -(std::pow(1.5 - x + xy, 2) + std::pow(2.25 - x + x * y_squared, 2) +
+                 std::pow(2.625 - x + x * y_cubed, 2));
+    };
+
+    CHECK(fitness({3, 0.5}) == doctest::Approx(0.0).epsilon(0.01));
+
+    dp::genetic::uniform_floating_point_generator generator{};
+    auto generate_value = [&generator] { return generator(-4.5, 4.5); };
+
+    std::vector<data_t> initial_population;
+
+    std::ranges::generate_n(std::back_inserter(initial_population), 10'000, [&generate_value]() {
+        return std::array{generate_value(), generate_value()};
+    });
+
+    auto mutator = [](const data_t& value) -> data_t {
+        thread_local dp::genetic::uniform_floating_point_generator generator{};
+        const auto [x, y] = value;
+        constexpr double increment = 0.00001;
+        return std::array{std::clamp(x + generator(-increment, increment), -4.5, 4.5),
+                          std::clamp(y + generator(-increment, increment), -4.5, 4.5)};
+    };
+    auto termination = dp::genetic::generations_termination_criteria{50'000};
+    const auto params = dp::genetic::params<data_t>::builder()
+                            .with_fitness_operator(fitness)
+                            .with_mutation_operator(mutator)
+                            .with_crossover_operator(dp::genetic::default_crossover{})
+                            .with_termination_operator(termination)
+                            .build();
+
+    const auto [best, _] = dp::genetic::solve(
+        initial_population, dp::genetic::algorithm_settings{.elitism_rate = 0.25}, params,
+        [](auto& stats) {
+            std::cout << std::format("best: [{}, {}]", stats.current_best.best[0],
+                                     stats.current_best.best[1])
+                      << " fitness: " << stats.current_best.fitness
+                      << " pop size: " << std::to_string(stats.current_generation_count) << "\n";
+        });
+
+    const auto [x, y] = best;
+    CHECK(x == doctest::Approx(3.0).epsilon(0.1));
+    CHECK(y == doctest::Approx(0.5).epsilon(0.1));
 }
