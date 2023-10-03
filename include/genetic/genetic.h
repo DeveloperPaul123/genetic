@@ -104,8 +104,9 @@ namespace dp {
             iteration_stats stats{};
             stats.current_best.best = std::get<ChromosomeType>(best_element);
 
-            while (!parameters.termination_operator()(std::get<ChromosomeType>(best_element),
-                                                      std::get<double>(best_element))) {
+            while (!dp::genetic::should_terminate(parameters.termination_operator(),
+                                                  std::get<ChromosomeType>(best_element),
+                                                  std::get<double>(best_element))) {
                 auto number_elitism = static_cast<std::size_t>(std::round(
                     static_cast<double>(current_population.size()) * settings.elitism_rate));
                 // perform elitism selection if it is enabled
