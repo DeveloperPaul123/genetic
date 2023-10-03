@@ -66,36 +66,37 @@ namespace dp {
             using chromosome_metadata = std::pair<ChromosomeType, double>;
             using population = std::vector<chromosome_metadata>;
             using iteration_stats = iteration_statistics<ChromosomeType>;
+            namespace vw = std::ranges::views;
+            namespace rng = std::ranges;
 
             static dp::thread_pool worker_pool{};
 
             // Performs elitism selection on the current population
             auto elitism = [](population& current_population, std::size_t number_elitism) {
                 // no elitism, so return empty population
-                if (number_elitism == 0) return std::ranges::views::take(current_population, 0);
+                if (number_elitism == 0) return vw::take(current_population, 0);
 
                 // sort so that largest fitness item is at front
-                std::ranges::partial_sort(
-                    current_population,
-                    current_population.begin() +
-                        std::min(current_population.size(), number_elitism + 1),
-                    details::fitness_sort_op<std::greater<>>{});
+                rng::partial_sort(current_population,
+                                  current_population.begin() +
+                                      std::min(current_population.size(), number_elitism + 1),
+                                  details::fitness_sort_op<std::greater<>>{});
 
                 // select the first n in the current population
-                return std::ranges::views::take(current_population, number_elitism);
+                return vw::take(current_population, number_elitism);
             };
 
             population current_population;
             // initialize our population
-            std::ranges::transform(
+            rng::transform(
                 initial_population, std::back_inserter(current_population),
                 [&](ChromosomeType value) {
                     return chromosome_metadata{value, parameters.fitness_operator()(value)};
                 });
             // sort by fitness
-            std::ranges::sort(current_population, details::fitness_sort_op{});
+            rng::sort(current_population, details::fitness_sort_op{});
 
-            auto best_element = *std::ranges::max_element(
+            auto best_element = *rng::max_element(
                 current_population, [](const std::pair<ChromosomeType, double>& first,
                                        const std::pair<ChromosomeType, double>& second) {
                     return std::get<double>(first) < std::get<double>(second);
@@ -164,14 +165,14 @@ namespace dp {
                     crossover_population.push_back(child2);
                 }
 
-                if (!std::ranges::empty(elite_population)) {
+                if (!rng::empty(elite_population)) {
                     // add elite population
                     crossover_population.insert(crossover_population.end(),
                                                 elite_population.begin(), elite_population.end());
                 }
 
                 // sort crossover population by fitness (lowest first)
-                std::ranges::sort(crossover_population, details::fitness_sort_op{});
+                rng::sort(crossover_population, details::fitness_sort_op{});
 
                 // reset the current population
                 current_population.clear();
@@ -179,7 +180,7 @@ namespace dp {
                 current_population = std::move(crossover_population);
 
                 // update the best element
-                best_element = *std::ranges::max_element(current_population);
+                best_element = *rng::max_element(current_population);
 
                 // send callback stats for each generation
                 stats.current_best.best = std::get<ChromosomeType>(best_element);
