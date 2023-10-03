@@ -175,11 +175,10 @@ TEST_CASE("Knapsack problem") {
                             knapsack_generator);
 
     // define the termination criteria
-    auto termination = dp::genetic::fitness_termination_criteria(fitness(solution));
+    auto termination = dp::genetic::fitness_termination(fitness(solution));
 
-    static_assert(
-        dp::genetic::concepts::termination_operator<dp::genetic::fitness_termination_criteria,
-                                                    knapsack, int>);
+    static_assert(dp::genetic::concepts::termination_operator<dp::genetic::fitness_termination,
+                                                              knapsack, int>);
 
     static_assert(
         dp::genetic::concepts::selection_operator<dp::genetic::rank_selection, knapsack,
@@ -237,7 +236,7 @@ TEST_CASE("Beale function") {
         return std::array{std::clamp(x + generator(-increment, increment), -4.5, 4.5),
                           std::clamp(y + generator(-increment, increment), -4.5, 4.5)};
     };
-    auto termination = dp::genetic::generations_termination_criteria{50'000};
+    auto termination = dp::genetic::generations_termination(50'000);
     const auto params = dp::genetic::params<data_t>::builder()
                             .with_fitness_operator(fitness)
                             .with_mutation_operator(mutator)

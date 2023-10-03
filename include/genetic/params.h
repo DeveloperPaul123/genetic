@@ -32,7 +32,7 @@ namespace dp::genetic {
         template <class FitnessOperator = details::accumulation_fitness_op,
                   class MutationOperator = noop_mutator,
                   class CrossoverOperator = default_crossover,
-                  class TerminationOperator = generations_termination_criteria,
+                  class TerminationOperator = generations_termination,
                   class SelectionOperator = roulette_selection>
             requires concepts::mutation_operator<MutationOperator, ChromosomeType> &&
                          concepts::fitness_operator<FitnessOperator, ChromosomeType> &&

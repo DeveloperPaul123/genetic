@@ -65,11 +65,7 @@ int main(int argc, char** argv) {
         dp::genetic::value_replacement_mutator<std::string>{available_chars}};
 
     // termination criteria
-    auto termination = dp::genetic::fitness_termination_criteria(fitness_op(solution));
-
-    static_assert(
-        dp::genetic::concepts::termination_operator<dp::genetic::fitness_termination_criteria,
-                                                    std::string, double>);
+    auto termination = dp::genetic::fitness_termination(fitness_op(solution));
 
     static_assert(
         dp::genetic::concepts::selection_operator<dp::genetic::rank_selection, std::string,

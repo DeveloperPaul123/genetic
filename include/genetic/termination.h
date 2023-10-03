@@ -1,29 +1,15 @@
 #pragma once
 
+#include "genetic/details/concepts.h"
+#include "genetic/op/termination/fitness.h"
+#include "genetic/op/termination/generations.h"
 namespace dp::genetic {
 
-    struct generations_termination_criteria {
-        generations_termination_criteria() = default;
-        explicit generations_termination_criteria(const std::size_t max_generations)
-            : count_(max_generations) {}
-        template <typename T>
-        bool operator()(T, double) {
-            count_--;
-            return count_ == 0;
-        }
-
-      private:
-        std::size_t count_{1000};
-    };
-
-    struct fitness_termination_criteria {
-        explicit fitness_termination_criteria(double target_fitness) : fitness_(target_fitness) {}
-        template <typename T>
-        bool operator()(T, double fitness) {
-            return fitness >= fitness_;
-        }
-
-      private:
-        double fitness_{};
-    };
+    // TODO: Do we have to pass the chromosome type and the fitness value type to the termination?
+    // TODO: Can we provide better overload options?
+    template <typename T, typename TerminationOp>
+        requires dp::genetic::concepts::termination_operator<TerminationOp, T, double>
+    constexpr bool should_terminate(TerminationOp &&termination_op, T &&t, double fitness) {
+        return std::invoke(std::forward<TerminationOp>(termination_op), t, fitness);
+    }
 }  // namespace dp::genetic
