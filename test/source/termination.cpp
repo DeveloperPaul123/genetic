@@ -11,7 +11,10 @@ TEST_CASE("Generations termination") {
     }
 
     CHECK_EQ(count, termination.max_generations);
+}
 
+TEST_CASE("Fitness termination") {
+    std::string chromosome{};
     auto fitness_term = dp::genetic::fitness_termination{100.};
     CHECK(dp::genetic::should_terminate(fitness_term, chromosome, 110.0));
     CHECK_FALSE(dp::genetic::should_terminate(fitness_term, chromosome, 99.99));
