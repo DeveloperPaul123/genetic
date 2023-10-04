@@ -104,6 +104,7 @@ namespace dp {
 
             iteration_stats stats{};
             stats.current_best.best = std::get<ChromosomeType>(best_element);
+            stats.current_best.fitness = std::get<double>(best_element);
 
             while (!dp::genetic::should_terminate(parameters.termination_operator(),
                                                   std::get<ChromosomeType>(best_element),
@@ -166,7 +167,7 @@ namespace dp {
                 }
 
                 if (!rng::empty(elite_population)) {
-                    // add elite population
+                    // add elite population directly to new population
                     crossover_population.insert(crossover_population.end(),
                                                 elite_population.begin(), elite_population.end());
                 }
