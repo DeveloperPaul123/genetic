@@ -80,7 +80,7 @@ constexpr dp::genetic::algorithm_settings settings{0.1, 0.5, 0.25};
 
 // generate an initial random population
 constexpr auto population_size = 2;
-std::vector<knapsack> initial_population{};  // TODO: Generate initial population
+std::vector<knapsack> initial_population{};
 initial_population.reserve(population_size);
 
 // generate the initial population
