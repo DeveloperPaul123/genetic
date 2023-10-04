@@ -16,6 +16,7 @@
 #include <string>
 
 // type declaration for knapsack problem
+// declared here to be used in ostream operator
 using knapsack = std::array<int, 5>;
 
 // print helper for knapsack
@@ -206,6 +207,7 @@ TEST_CASE("Knapsack problem") {
 }
 
 TEST_CASE("Beale function") {
+    // define our data type as a 2D "vector"
     using data_t = std::array<double, 2>;
     const auto fitness = [](const data_t& value) -> double {
         const auto x = value[0];
@@ -225,18 +227,23 @@ TEST_CASE("Beale function") {
 
     std::vector<data_t> initial_population;
 
+    // generate our initial population
     std::ranges::generate_n(std::back_inserter(initial_population), 10'000, [&generate_value]() {
         return std::array{generate_value(), generate_value()};
     });
 
+    constexpr double increment = 0.00001;
+
     auto mutator = [](const data_t& value) -> data_t {
         thread_local dp::genetic::uniform_floating_point_generator generator{};
         const auto [x, y] = value;
-        constexpr double increment = 0.00001;
         return std::array{std::clamp(x + generator(-increment, increment), -4.5, 4.5),
                           std::clamp(y + generator(-increment, increment), -4.5, 4.5)};
     };
-    auto termination = dp::genetic::generations_termination(50'000);
+
+    // if fitness doesn't change a significant amount in 30 generations, terminate
+    auto termination = dp::genetic::fitness_hysteresis{1.e-8, 30};
+    // auto termination = dp::genetic::generations_termination{50'000};
     const auto params = dp::genetic::params<data_t>::builder()
                             .with_fitness_operator(fitness)
                             .with_mutation_operator(mutator)
@@ -254,6 +261,6 @@ TEST_CASE("Beale function") {
         });
 
     const auto [x, y] = best;
-    CHECK(x == doctest::Approx(3.0).epsilon(0.1));
-    CHECK(y == doctest::Approx(0.5).epsilon(0.1));
+    CHECK(x == doctest::Approx(3.0).epsilon(0.001));
+    CHECK(y == doctest::Approx(0.5).epsilon(0.001));
 }
