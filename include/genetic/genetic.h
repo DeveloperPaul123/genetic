@@ -181,7 +181,17 @@ namespace dp {
                 current_population = std::move(crossover_population);
 
                 // update the best element
-                best_element = *rng::max_element(current_population);
+                auto temp_best_element = *rng::max_element(current_population);
+                const auto [element, best_fitness] = temp_best_element;
+                const auto previous_best_fitness = std::get<double>(best_element);
+                if (std::abs(best_fitness - previous_best_fitness) > 0.0) {
+                    // better fitness
+                    best_element = temp_best_element;
+                } else {
+                    // current best did not improve previous best
+                    // insert previous best into the current population
+                    if (!current_population.empty()) current_population[0] = best_element;
+                }
 
                 // send callback stats for each generation
                 stats.current_best.best = std::get<ChromosomeType>(best_element);
