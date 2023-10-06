@@ -28,9 +28,8 @@ namespace dp::genetic {
             PopulationType, fitness_evaluation_type)>;
         /// @}
 
-        // TODO
         template <class FitnessOperator = details::accumulation_fitness_op,
-                  class MutationOperator = noop_mutator,
+                  class MutationOperator = no_op_mutator,
                   class CrossoverOperator = default_crossover,
                   class TerminationOperator = generations_termination,
                   class SelectionOperator = roulette_selection>
@@ -88,9 +87,10 @@ namespace dp::genetic {
                 return *this;
             }
 
-            builder& with_selection_operator(
-                dp::genetic::concepts::selection_operator<ChromosomeType, PopulationType> auto&&
-                    op) {
+            // TODO enable CTAD here
+            template <typename UnaryOp>
+            builder& with_selection_operator(dp::genetic::concepts::selection_operator<
+                                             ChromosomeType, PopulationType, UnaryOp> auto&& op) {
                 data_.selection_ = std::forward<decltype(op)>(op);
                 return *this;
             }
