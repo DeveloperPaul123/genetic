@@ -31,6 +31,7 @@ int main(int argc, char** argv) {
     std::getline(std::cin, solution);
 
     constexpr auto is_space = [](const auto& c) { return std::isspace(c); };
+    
     // filter and trim input to only include characters in the alphabet that we accept
     solution = solution | std::ranges::views::filter([](const auto& c) {
                    return std::ranges::find(alphabet, c) != std::end(alphabet);
@@ -54,6 +55,7 @@ int main(int argc, char** argv) {
 
     // fitness evaluator
     dp::genetic::element_wise_comparison fitness_op(solution, 1.0);
+    dp::genetic::pooled_value_generator<std::string> value_generator(alphabet);
 
     auto string_mutator = dp::genetic::composite_mutator{
         [&](const std::string& input) {
@@ -62,7 +64,9 @@ int main(int argc, char** argv) {
             }
             return input;
         },
-        dp::genetic::value_replacement_mutator<std::string>{available_chars}};
+        dp::genetic::value_replacement<std::string,
+                                       dp::genetic::pooled_value_generator<std::string>>{
+            value_generator}};
 
     // termination criteria
     auto termination = dp::genetic::fitness_termination(fitness_op(solution));
