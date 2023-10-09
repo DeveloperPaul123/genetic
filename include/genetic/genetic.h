@@ -145,13 +145,15 @@ namespace dp {
                                 auto child2 = prms.crossover_operator()(parent2, parent1);
 
                                 // mutate the children
-                                child1 = prms.mutation_operator()(child1);
-                                child2 = prms.mutation_operator()(child2);
+                                child1 = dp::genetic::mutate(prms.mutation_operator(), child1);
+                                child2 = dp::genetic::mutate(prms.mutation_operator(), child2);
 
                                 // return the result + their fitness
                                 return std::make_pair(
-                                    std::make_pair(child1, prms.fitness_operator()(child1)),
-                                    std::make_pair(child2, prms.fitness_operator()(child2)));
+                                    std::make_pair(child1, dp::genetic::evaluate_fitness(
+                                                               child1, prms.fitness_operator())),
+                                    std::make_pair(child2, dp::genetic::evaluate_fitness(
+                                                               child2, prms.fitness_operator())));
                             },
                             parameters, current_population);
                     future_results.emplace_back(std::move(future));
