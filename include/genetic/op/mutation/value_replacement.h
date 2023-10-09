@@ -30,6 +30,8 @@ namespace dp::genetic {
 
                 auto location = std::ranges::begin(return_value) + output_index;
                 auto value = std::invoke(generator_);
+                // ensure we don't replace the value with the same value
+                while (value == *location) value = std::invoke(generator_);
                 std::swap(*location, value);
             }
             return return_value;
