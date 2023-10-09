@@ -145,7 +145,7 @@ TEST_CASE("Knapsack problem") {
 
     // generate an initial random population
     constexpr auto population_size = 2;
-    std::vector<knapsack> initial_population{};  // TODO: Generate initial population
+    std::vector<knapsack> initial_population{};
     initial_population.reserve(population_size);
 
     // random length uniform distribution
@@ -171,7 +171,7 @@ TEST_CASE("Knapsack problem") {
         return basic;
     };
 
-    // generate the population
+    // generate the initial population
     std::ranges::generate_n(std::back_inserter(initial_population), population_size,
                             knapsack_generator);
 
@@ -184,7 +184,7 @@ TEST_CASE("Knapsack problem") {
     static_assert(
         dp::genetic::concepts::selection_operator<dp::genetic::rank_selection, knapsack,
                                                   std::vector<knapsack>, decltype(fitness)>);
-
+                                                  
     auto params = dp::genetic::params<knapsack>::builder()
                       .with_mutation_operator(mutator)
                       .with_crossover_operator(crossover)
@@ -234,7 +234,7 @@ TEST_CASE("Beale function") {
 
     constexpr double increment = 0.00001;
 
-    auto mutator = [](const data_t& value) -> data_t {
+    auto mutator = [increment](const data_t& value) -> data_t {
         thread_local dp::genetic::uniform_floating_point_generator generator{};
         const auto [x, y] = value;
         return std::array{std::clamp(x + generator(-increment, increment), -4.5, 4.5),
