@@ -10,6 +10,7 @@ A flexible and performant implementation of the genetic algorithm in C++20/23.
 ## Features
 
 - Built entirely with C++20/23
+- Includes many default operators for most use cases
 - Supply your own operations for:
   - Selection
   - Crossover
