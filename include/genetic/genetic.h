@@ -52,6 +52,11 @@ namespace dp {
             std::size_t population_size{};
         };
 
+        template <typename Fitness>
+        struct problem_description {
+            Fitness fitness_op;
+        };
+
         template <typename PopulationType,
                   typename ChromosomeType = std::ranges::range_value_t<PopulationType>,
                   typename IterationCallback =
@@ -91,7 +96,8 @@ namespace dp {
             rng::transform(
                 initial_population, std::back_inserter(current_population),
                 [&](ChromosomeType value) {
-                    return chromosome_metadata{value, parameters.fitness_operator()(value)};
+                    return chromosome_metadata{
+                        value, dp::genetic::evaluate_fitness(parameters.fitness_operator(), value)};
                 });
             // sort by fitness
             rng::sort(current_population, details::fitness_sort_op{});
@@ -136,8 +142,8 @@ namespace dp {
                                                              std::ranges::to<PopulationType>();
                                 auto [parent1, parent2] = prms.selection_operator()(
                                     chromosomes_only_view, [&prms](const auto& values) {
-                                        return genetic::evaluate_fitness(values,
-                                                                         prms.fitness_operator());
+                                        return genetic::evaluate_fitness(prms.fitness_operator(),
+                                                                         values);
                                     });
 
                                 // generate two children from each parent sets
@@ -151,9 +157,9 @@ namespace dp {
                                 // return the result + their fitness
                                 return std::make_pair(
                                     std::make_pair(child1, dp::genetic::evaluate_fitness(
-                                                               child1, prms.fitness_operator())),
+                                                               prms.fitness_operator(), child1)),
                                     std::make_pair(child2, dp::genetic::evaluate_fitness(
-                                                               child2, prms.fitness_operator())));
+                                                               prms.fitness_operator(), child2)));
                             },
                             parameters, current_population);
                     future_results.emplace_back(std::move(future));
@@ -205,6 +211,24 @@ namespace dp {
 
             return {std::get<ChromosomeType>(best_element), std::get<double>(best_element)};
         }
-    }  // namespace genetic
+
+        namespace experimental {
+            template <typename PopulationType,
+                      typename ChromosomeType = std::ranges::range_value_t<PopulationType>>
+                requires std::default_initializable<ChromosomeType> &&
+                         concepts::population<PopulationType, ChromosomeType>
+            struct solve_impl {
+                template <typename ScoreType>
+                std::pair<ChromosomeType, ScoreType> operator()(
+                    const PopulationType& initial_population, auto&& description) const {
+                    // TODO
+                    return {};
+                }
+            };
+
+            template <typename Population>
+            inline constexpr auto solve_problem = solve_impl<Population>{};
+        }  // namespace experimental
+    }      // namespace genetic
 
 }  // namespace dp

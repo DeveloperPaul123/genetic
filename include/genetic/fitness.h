@@ -12,7 +12,7 @@ namespace dp::genetic {
     template <std::ranges::range Range, typename FitnessOp,
               typename T = std::invoke_result_t<std::decay_t<FitnessOp>, Range>>
         requires concepts::fitness_operator<std::decay_t<FitnessOp>, Range>
-    constexpr T evaluate_fitness(const Range& range, FitnessOp&& fitness_op) {
+    constexpr T evaluate_fitness(FitnessOp&& fitness_op, const Range& range) {
         return std::invoke(std::forward<FitnessOp>(fitness_op), range);
     }
 }  // namespace dp::genetic
