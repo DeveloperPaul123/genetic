@@ -92,6 +92,10 @@ namespace dp::genetic {
                 { t(l, u) } -> std::convertible_to<std::remove_cvref_t<Index>>;
             };
 
+        template <typename Fn, typename ValueType>
+        concept value_generator =
+            std::invocable<Fn> && std::convertible_to<std::invoke_result_t<Fn>, ValueType>;
+
         template <typename Range, typename Chromosome,
                   typename T = type_traits::element_type_t<Range>>
         concept population = std::ranges::range<Range> && std::is_same_v<Chromosome, T>;
