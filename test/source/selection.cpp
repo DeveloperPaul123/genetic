@@ -28,7 +28,8 @@ std::unordered_map<T, int> test_selection(Selector& selector, const T& test_valu
 
     // do 1000 selections and build up a selection histogram
     for (unsigned i = 0; i < selection_count; i++) {
-        const auto& [parent1, parent2] = selector(initial_population, fitness_op);
+        const auto& [parent1, parent2] =
+            dp::genetic::select_parents(selector, initial_population, fitness_op);
         if (!selection_histogram.contains(parent1)) {
             selection_histogram[parent1] = 0;
         } else {

@@ -140,8 +140,9 @@ namespace dp {
                                 // randomly select 2 parents
                                 auto chromosomes_only_view = pop | std::views::elements<0> |
                                                              std::ranges::to<PopulationType>();
-                                auto [parent1, parent2] = prms.selection_operator()(
-                                    chromosomes_only_view, [&prms](const auto& values) {
+                                auto [parent1, parent2] = dp::genetic::select_parents(
+                                    prms.selection_operator(), chromosomes_only_view,
+                                    [&prms](const auto& values) {
                                         return genetic::evaluate_fitness(prms.fitness_operator(),
                                                                          values);
                                     });
@@ -221,7 +222,7 @@ namespace dp {
                 template <typename ScoreType>
                 std::pair<ChromosomeType, ScoreType> operator()(
                     const PopulationType& initial_population, auto&& description) const {
-                    // TODO
+                    // TODO solve the actual problem
                     return {};
                 }
             };
