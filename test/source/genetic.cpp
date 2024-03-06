@@ -184,7 +184,7 @@ TEST_CASE("Knapsack problem") {
     static_assert(
         dp::genetic::concepts::selection_operator<dp::genetic::rank_selection, knapsack,
                                                   std::vector<knapsack>, decltype(fitness)>);
-                                                  
+
     auto params = dp::genetic::params<knapsack>::builder()
                       .with_mutation_operator(mutator)
                       .with_crossover_operator(crossover)
@@ -234,19 +234,13 @@ TEST_CASE("Beale function") {
 
     constexpr double increment = 0.00001;
 
-    auto mutator = [increment](const data_t& value) -> data_t {
-        thread_local dp::genetic::uniform_floating_point_generator generator{};
-        const auto [x, y] = value;
-        return std::array{std::clamp(x + generator(-increment, increment), -4.5, 4.5),
-                          std::clamp(y + generator(-increment, increment), -4.5, 4.5)};
-    };
-
+    auto double_mutator = dp::genetic::double_value_mutator(-increment, increment);
     // if fitness doesn't change a significant amount in 30 generations, terminate
     auto termination = dp::genetic::fitness_hysteresis{1.e-8, 30};
     // auto termination = dp::genetic::generations_termination{50'000};
     const auto params = dp::genetic::params<data_t>::builder()
                             .with_fitness_operator(fitness)
-                            .with_mutation_operator(mutator)
+                            .with_mutation_operator(double_mutator)
                             .with_crossover_operator(dp::genetic::default_crossover{})
                             .with_termination_operator(termination)
                             .build();

@@ -25,16 +25,21 @@ namespace dp::genetic {
             template <typename InputRange>
                 requires std::ranges::range<InputRange>
             OutputRange operator()(const InputRange& input) {
+                // check for std::array and std::ranges::sized_range
                 if constexpr (std::ranges::sized_range<InputRange> &&
                               dp::genetic::type_traits::is_std_array<OutputRange>) {
-                    // TODO: This section doesn't really work for std::array<>
-                    OutputRange output;
+                    OutputRange output{};
                     for (auto i = 0; i < std::ranges::size(output); ++i) {
                         output[i] = input[i];
                     }
                     return output;
+
+                } else {
+                    // otherwise, just convert to the output range
+                    // note we have to wrap this in an "else" otherwise it won't compile due to it
+                    // being ill-formed for the "to" conversion
+                    return input | std::ranges::to<std::remove_cvref_t<OutputRange>>();
                 }
-                return input | std::ranges::to<std::remove_cvref_t<OutputRange>>();
             }
         };
 

@@ -91,4 +91,11 @@ TEST_CASE("Value mutator") {
         int diff = new_value_int[i] - xyz_int[i];
         CHECK(std::abs(diff) <= 5);
     }
+
+    const std::array<double, 2> xy_array{1.0, 2.0};
+    static_assert(dp::genetic::type_traits::is_std_array<std::array<double, 2>>);
+    auto new_value_array = dp::genetic::mutate(double_value_mutator, xy_array);
+    for (auto i = 0; i < xy_array.size(); ++i) {
+        CHECK(std::abs(new_value_array[i] - xy_array[i]) <= 0.1);
+    }
 }
