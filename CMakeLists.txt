@@ -32,8 +32,8 @@ CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.6.0")
 CPMAddPackage(
     NAME thread-pool
     GITHUB_REPOSITORY DeveloperPaul123/thread-pool
-    VERSION 0.5.0
-    GIT_TAG 0.5.0
+    VERSION 0.6.2
+    GIT_TAG 0.6.2
     OPTIONS "TP_BUILD_TESTS OFF" "TP_BUILD_BENCHMARKS OFF" "TP_BUILD_EXAMPLES OFF"
 )
 
