@@ -5,6 +5,8 @@
 
 #include <iostream>
 #include <string>
+#include <format>
+#include <ranges>
 
 struct random_word_generator {
     [[nodiscard]] std::string operator()(std::string_view char_set, std::size_t max_length) const {

@@ -6,6 +6,7 @@
 #include <random>
 #include <ranges>
 #include <utility>
+#include <functional>
 
 #include "genetic/op/selection/rank_selection.h"
 #include "genetic/op/selection/roulette_selection.h"

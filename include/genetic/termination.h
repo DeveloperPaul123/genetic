@@ -5,6 +5,8 @@
 #include "genetic/op/termination/fitness_hysteresis.h"
 #include "genetic/op/termination/generations.h"
 
+#include <functional>
+
 namespace dp::genetic {
 
     // TODO: Do we have to pass the chromosome type and the fitness value type to the termination?
