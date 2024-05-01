@@ -12,6 +12,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
+#include <numbers>
 #include <random>
 #include <string>
 
@@ -258,3 +259,48 @@ TEST_CASE("Beale function") {
     CHECK(x == doctest::Approx(3.0).epsilon(0.001));
     CHECK(y == doctest::Approx(0.5).epsilon(0.001));
 }
+
+TEST_CASE("sin(x)") {
+    // define our data type as a 2D "vector"
+    using data_t = std::array<double, 1>;
+    const auto fitness = [](const data_t& value) -> double {
+        const auto x = value[0];
+        return std::sin(x);
+    };
+
+    dp::genetic::uniform_floating_point_generator generator{};
+    auto generate_value = [&generator] { return generator(-std::numbers::pi, std::numbers::pi); };
+
+    std::vector<data_t> initial_population;
+
+    // generate our initial population
+    std::ranges::generate_n(std::back_inserter(initial_population), 10'000,
+                            [&generate_value]() { return std::array{generate_value()}; });
+
+    constexpr double increment = 0.00001;
+
+    auto double_mutator = dp::genetic::double_value_mutator(-increment, increment);
+    // if fitness doesn't change a significant amount in 30 generations, terminate
+    auto termination = dp::genetic::fitness_hysteresis{1.e-8, 30};
+    
+    const auto params = dp::genetic::params<data_t>::builder()
+                            .with_fitness_operator(fitness)
+                            .with_mutation_operator(double_mutator)
+                            .with_crossover_operator(dp::genetic::random_crossover{})
+                            .with_termination_operator(termination)
+                            .build();
+
+    const auto [best, _] = dp::genetic::solve(
+        initial_population, dp::genetic::algorithm_settings{.elitism_rate = 0.25}, params,
+        [](auto& stats) {
+            std::cout << std::format("best: [{}, {}]", stats.current_best.best[0],
+                                     stats.current_best.fitness)
+                      << " fitness: " << stats.current_best.fitness
+                      << " pop size: " << std::to_string(stats.current_generation_count) << "\n";
+        });
+
+    const auto [x] = best;
+    CHECK(x == doctest::Approx(std::numbers::pi / 2.).epsilon(0.001));
+}
+
+// Rastrigin’s function
