@@ -15,7 +15,7 @@
 namespace dp::genetic {
 
     template <typename T, dp::genetic::concepts::mutation_operator<T> Mutator>
-    [[nodiscard]] constexpr inline auto mutate(Mutator&& mutator, const T& input_value) {
+    [[nodiscard]] constexpr auto mutate(Mutator&& mutator, const T& input_value) {
         return std::invoke(std::forward<Mutator>(mutator), input_value);
     }
 }  // namespace dp::genetic

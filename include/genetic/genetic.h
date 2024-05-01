@@ -148,8 +148,10 @@ namespace dp {
                                     });
 
                                 // generate two children from each parent sets
-                                auto child1 = prms.crossover_operator()(parent1, parent2);
-                                auto child2 = prms.crossover_operator()(parent2, parent1);
+                                auto child1 = dp::genetic::make_children(prms.crossover_operator(),
+                                                                         parent1, parent2);
+                                auto child2 = dp::genetic::make_children(prms.crossover_operator(),
+                                                                         parent2, parent1);
 
                                 // mutate the children
                                 child1 = dp::genetic::mutate(prms.mutation_operator(), child1);
@@ -230,6 +232,6 @@ namespace dp {
             template <typename Population>
             inline constexpr auto solve_problem = solve_impl<Population>{};
         }  // namespace experimental
-    }      // namespace genetic
+    }  // namespace genetic
 
 }  // namespace dp

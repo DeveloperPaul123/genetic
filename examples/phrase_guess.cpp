@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
     dp::genetic::params<std::string> params =
         dp::genetic::params<std::string>::builder()
             .with_mutation_operator(string_mutator)
-            .with_crossover_operator(dp::genetic::default_crossover{})
+            .with_crossover_operator(dp::genetic::random_crossover{})
             .with_fitness_operator(fitness_op)
             .with_termination_operator(termination)
             .build();
