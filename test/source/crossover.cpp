@@ -9,11 +9,12 @@
 using namespace dp::genetic;
 
 // cross over concept checks
-static_assert(concepts::crossover_operator<default_crossover, std::string>);
-static_assert(concepts::crossover_operator<default_crossover, int>);
-static_assert(concepts::crossover_operator<default_crossover, std::array<int, 4>>);
-static_assert(concepts::crossover_operator<default_crossover, std::vector<int>>);
-static_assert(concepts::crossover_operator<default_crossover, std::vector<std::string>>);
+static_assert(concepts::crossover_operator<random_crossover, std::string>);
+// TODO: Add support for arithmetic types
+// static_assert(concepts::crossover_operator<random_crossover, int>);
+static_assert(concepts::crossover_operator<random_crossover, std::array<int, 4>>);
+static_assert(concepts::crossover_operator<random_crossover, std::vector<int>>);
+static_assert(concepts::crossover_operator<random_crossover, std::vector<std::string>>);
 
 TEST_CASE("Test generic cross technique") {
     constexpr auto first_point = 2;
@@ -55,14 +56,15 @@ TEST_CASE("Test generic cross technique") {
 }
 
 TEST_CASE("Test default crossover operator") {
-    default_crossover crossover{};
+    dp::genetic::random_crossover crossover{};
 
     using namespace std::string_literals;
 
     const auto& p1 = "aabb"s;
     const auto& p2 = "bbaa"s;
-    const std::string& child1 = crossover(p1, p2);
-    const std::string& child2 = crossover(p2, p1);
+
+    const std::string& child1 = dp::genetic::make_children(crossover, p1, p2);
+    const std::string& child2 = dp::genetic::make_children(crossover, p2, p1);
 
     std::cout << child1 << '\n' << child2 << '\n' << std::endl;
 }

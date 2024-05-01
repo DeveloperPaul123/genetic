@@ -241,7 +241,7 @@ TEST_CASE("Beale function") {
     const auto params = dp::genetic::params<data_t>::builder()
                             .with_fitness_operator(fitness)
                             .with_mutation_operator(double_mutator)
-                            .with_crossover_operator(dp::genetic::default_crossover{})
+                            .with_crossover_operator(dp::genetic::random_crossover{})
                             .with_termination_operator(termination)
                             .build();
 
