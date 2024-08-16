@@ -306,35 +306,3 @@ TEST_CASE("sin(x)") {
     const auto [x] = best;
     CHECK(x == doctest::Approx(std::numbers::pi / 2.).epsilon(0.001));
 }
-
-TEST_CASE("Experimental sin(x)") {
-    // define our data type as a 1D "vector"
-    using data_t = std::array<double, 1>;
-    const auto fitness = [](const data_t& value) -> double {
-        const auto x = value[0];
-        return std::sin(x);
-    };
-
-    dp::genetic::uniform_floating_point_generator generator{};
-    auto generate_value = [&generator] { return generator(-std::numbers::pi, std::numbers::pi); };
-
-    std::vector<data_t> initial_population;
-
-    // generate our initial population
-    std::ranges::generate_n(std::back_inserter(initial_population), 10'000,
-                            [&generate_value]() { return std::array{generate_value()}; });
-
-    constexpr double increment = 0.00001;
-    auto double_mutator = dp::genetic::double_value_mutator(-increment, increment);
-
-    const auto settings = dp::genetic::algorithm_settings{.elitism_rate = 0.25};
-    auto callback = [](dp::genetic::iteration_statistics<data_t>& stats) mutable {
-        std::cout << std::format("best: [{}, {}]", stats.current_best.best[0],
-                                 stats.current_best.fitness)
-                  << " fitness: " << stats.current_best.fitness
-                  << " pop size: " << std::to_string(stats.current_generation_count) << "\n";
-    };
-
-    const auto& result =
-        dp::genetic::experimental::solve_problem(initial_population, fitness, double_mutator);
-}
