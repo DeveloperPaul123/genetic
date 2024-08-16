@@ -20,15 +20,19 @@
 // declared here to be used in ostream operator
 using knapsack = std::array<int, 5>;
 
-// print helper for knapsack
-inline std::ostream& operator<<(std::ostream& out, const knapsack& ks) {
-    out << "[ ";
-    std::ranges::copy_n(ks.begin(), static_cast<long long>(ks.size()) - 1,
-                        std::ostream_iterator<int>(out, ", "));
-    // print last element
-    out << ks[ks.size() - 1] << " ]";
-    return out;
-}
+// print helper for knapsack, put in std:: namespace to allow for ADL
+// other option is to define this before including doctest.h
+// see https://github.com/doctest/doctest/issues/551
+namespace std {
+    inline std::ostream& operator<<(std::ostream& out, const knapsack& ks) {
+        out << "[ ";
+        std::ranges::copy_n(ks.begin(), static_cast<long long>(ks.size()) - 1,
+                            std::ostream_iterator<int>(out, ", "));
+        // print last element
+        out << ks[ks.size() - 1] << " ]";
+        return out;
+    }
+}  // namespace std
 
 TEST_CASE("Knapsack problem") {
     // knapsack problem as described here: https://en.wikipedia.org/wiki/Knapsack_problem
@@ -123,15 +127,15 @@ TEST_CASE("Knapsack problem") {
     const knapsack p2 = {0, 2, 3, -1, -1};
     const knapsack p3 = {0, 1, -1, -1, -1};
     const knapsack p4 = {0, 1, 2, 3, -1};
-    auto c1 = crossover(p1, p2);
-    auto c2 = crossover(p2, p1);
-    auto c3 = crossover(p2, p4);
-    auto c4 = crossover(p3, p4);
+    auto c1 = dp::genetic::make_children(crossover, p1, p2);
+    auto c2 = dp::genetic::make_children(crossover, p2, p1);
+    auto c3 = dp::genetic::make_children(crossover, p2, p4);
+    auto c4 = dp::genetic::make_children(crossover, p3, p4);
 
-    CHECK(c1 == knapsack({1, 0, 2, 3, -1}));
-    CHECK(c2 == knapsack({0, 2, 3, 1, -1}));
-    CHECK(c3 == knapsack({0, 2, 3, 1, -1}));
-    CHECK(c4 == knapsack({0, 1, 2, 3, -1}));
+    CHECK_EQ(c1, knapsack({1, 0, 2, 3, -1}));
+    CHECK_EQ(c2, knapsack({0, 2, 3, 1, -1}));
+    CHECK_EQ(c3, knapsack({0, 2, 3, 1, -1}));
+    CHECK_EQ(c4, knapsack({0, 1, 2, 3, -1}));
 
     // the solution is all the boxes except for the heaviest one.
     const knapsack solution = {-1, 1, 2, 3, 4};
@@ -261,7 +265,7 @@ TEST_CASE("Beale function") {
 }
 
 TEST_CASE("sin(x)") {
-    // define our data type as a 2D "vector"
+    // define our data type as a 1D "vector"
     using data_t = std::array<double, 1>;
     const auto fitness = [](const data_t& value) -> double {
         const auto x = value[0];
@@ -282,7 +286,7 @@ TEST_CASE("sin(x)") {
     auto double_mutator = dp::genetic::double_value_mutator(-increment, increment);
     // if fitness doesn't change a significant amount in 30 generations, terminate
     auto termination = dp::genetic::fitness_hysteresis{1.e-8, 30};
-    
+
     const auto params = dp::genetic::params<data_t>::builder()
                             .with_fitness_operator(fitness)
                             .with_mutation_operator(double_mutator)
@@ -303,4 +307,34 @@ TEST_CASE("sin(x)") {
     CHECK(x == doctest::Approx(std::numbers::pi / 2.).epsilon(0.001));
 }
 
-// Rastrigin’s function
+TEST_CASE("Experimental sin(x)") {
+    // define our data type as a 1D "vector"
+    using data_t = std::array<double, 1>;
+    const auto fitness = [](const data_t& value) -> double {
+        const auto x = value[0];
+        return std::sin(x);
+    };
+
+    dp::genetic::uniform_floating_point_generator generator{};
+    auto generate_value = [&generator] { return generator(-std::numbers::pi, std::numbers::pi); };
+
+    std::vector<data_t> initial_population;
+
+    // generate our initial population
+    std::ranges::generate_n(std::back_inserter(initial_population), 10'000,
+                            [&generate_value]() { return std::array{generate_value()}; });
+
+    constexpr double increment = 0.00001;
+    auto double_mutator = dp::genetic::double_value_mutator(-increment, increment);
+
+    const auto settings = dp::genetic::algorithm_settings{.elitism_rate = 0.25};
+    auto callback = [](dp::genetic::iteration_statistics<data_t>& stats) mutable {
+        std::cout << std::format("best: [{}, {}]", stats.current_best.best[0],
+                                 stats.current_best.fitness)
+                  << " fitness: " << stats.current_best.fitness
+                  << " pop size: " << std::to_string(stats.current_generation_count) << "\n";
+    };
+
+    const auto& result =
+        dp::genetic::experimental::solve_problem(initial_population, fitness, double_mutator);
+}
