@@ -30,6 +30,28 @@ namespace dp {
                     return cmp(std::get<double>(first), std::get<double>(second));
                 }
             };
+
+            struct elitism_op {
+                template <typename Population>
+                constexpr auto operator()(Population&& population,
+                                          std::size_t number_elitism) const {
+                    namespace vw = std::ranges::views;
+                    namespace rng = std::ranges;
+                    // no elitism, so return empty population
+                    if (number_elitism == 0) return vw::take(population, 0);
+
+                    // sort so that largest fitness item is at front
+                    rng::partial_sort(
+                        population,
+                        population.begin() + std::min(population.size(), number_elitism + 1),
+                        details::fitness_sort_op<std::greater<>>{});
+
+                    // select the first n in the current population
+                    return vw::take(population, number_elitism);
+                }
+            };
+
+            inline constexpr auto elitism = elitism_op{};
         }  // namespace details
 
         /// @brief Settings type for probabilities
@@ -76,21 +98,6 @@ namespace dp {
 
             static dp::thread_pool worker_pool{};
 
-            // Performs elitism selection on the current population
-            auto elitism = [](population& current_population, std::size_t number_elitism) {
-                // no elitism, so return empty population
-                if (number_elitism == 0) return vw::take(current_population, 0);
-
-                // sort so that largest fitness item is at front
-                rng::partial_sort(current_population,
-                                  current_population.begin() +
-                                      std::min(current_population.size(), number_elitism + 1),
-                                  details::fitness_sort_op<std::greater<>>{});
-
-                // select the first n in the current population
-                return vw::take(current_population, number_elitism);
-            };
-
             population current_population;
             // initialize our population
             rng::transform(
@@ -120,7 +127,7 @@ namespace dp {
                 // perform elitism selection if it is enabled
                 if (number_elitism == 0 && settings.elitism_rate > 0.0) number_elitism = 2;
                 // generate elite population
-                auto elite_population = elitism(current_population, number_elitism);
+                auto elite_population = details::elitism(current_population, number_elitism);
 
                 // cross over
                 auto crossover_number = static_cast<std::size_t>(std::round(
