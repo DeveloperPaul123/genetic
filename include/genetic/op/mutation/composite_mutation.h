@@ -20,7 +20,7 @@ namespace dp::genetic {
         }
 
       public:
-        explicit composite_mutator(Args&&... args) : mutators_(std::forward<Args>(args)...) {}
+        explicit composite_mutator(Args&&... args) : mutators_(std::move(args)...) {}
         template <typename T>
         T operator()(T t) {
             return call_helper<sizeof...(Args)>(t);

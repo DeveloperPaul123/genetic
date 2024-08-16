@@ -30,7 +30,7 @@ namespace dp::genetic {
           public:
             explicit composite_fitness(Args... args)
                 requires(sizeof...(Args) > 0)  // must have at least 1 operator
-                : fitness_ops_(std::forward<Args>(args)...) {}
+                : fitness_ops_(args...) {}
             template <typename BinaryOperator, std::ranges::range Range,
                       typename ScoreType = std::invoke_result_t<
                           std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>, Range>>
@@ -61,9 +61,7 @@ namespace dp::genetic {
         struct composite_base {
           private:
             using type = composite_fitness<Args...>;
-            static constexpr type make_argument_tuple(Args... args) {
-                return type(std::forward<Args>(args)...);
-            }
+            static constexpr type make_argument_tuple(Args... args) { return type(args...); }
 
           protected:
             type fitness_;
