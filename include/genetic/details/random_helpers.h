@@ -22,7 +22,6 @@ namespace dp::genetic {
         }
     }  // namespace details
 
-    // TODO: Add a way to inject a random device and/or how to initialize it
     struct uniform_integral_generator {
         template <std::integral T, std::uniform_random_bit_generator RandomDevice = std::mt19937>
         auto operator()(const T &lower_bound, const T &upper_bound) {
@@ -33,7 +32,6 @@ namespace dp::genetic {
         }
     };
 
-    // TODO: Add a way to inject a random device and/or how to initialize it
     struct uniform_floating_point_generator {
         template <std::floating_point T,
                   std::uniform_random_bit_generator RandomDevice = std::mt19937>

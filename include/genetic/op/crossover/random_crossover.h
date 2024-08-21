@@ -6,6 +6,11 @@
 #include "genetic/details/crossover_helpers.h"
 
 namespace dp::genetic {
+    /**
+     * @brief Randomly crosses over two parent ranges to produce a child range.
+     * @details The pivot index (where the "splice" occurs) is randomly chosen using an
+     * IndexProvider which defaults to a uniform integral generator.
+     */
     struct random_crossover {
         template <std::ranges::range T, typename SimpleType = std::remove_cvref_t<T>,
                   typename IndexProvider = genetic::uniform_integral_generator>
