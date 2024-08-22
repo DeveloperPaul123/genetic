@@ -87,7 +87,6 @@ namespace dp::genetic {
                 return *this;
             }
 
-            // TODO enable CTAD here
             template <typename UnaryOp>
             builder& with_selection_operator(dp::genetic::concepts::selection_operator<
                                              ChromosomeType, PopulationType, UnaryOp> auto&& op) {

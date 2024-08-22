@@ -6,6 +6,9 @@
 #include "genetic/details/random_helpers.h"
 
 namespace dp::genetic {
+    /**
+     * @brief Perform roulette selection on a population.
+     */
     struct roulette_selection {
         template <std::ranges::range Range, typename UnaryOperator,
                   typename T = std::ranges::range_value_t<Range>,

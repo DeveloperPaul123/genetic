@@ -5,6 +5,9 @@
 #include "genetic/op/selection/roulette_selection.h"
 
 namespace dp::genetic {
+    /**
+     * @brief Perform rank selection on a population.
+     */
     struct rank_selection {
         template <std::ranges::range Range, typename UnaryOperator,
                   typename T = std::ranges::range_value_t<Range>,

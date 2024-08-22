@@ -19,5 +19,8 @@ namespace dp::genetic {
         };
     }  // namespace details
 
+    /**
+     * @brief Termination criteria for a fixed number of generations.
+     */
     using generations_termination = details::generations_termination_op;
 }  // namespace dp::genetic

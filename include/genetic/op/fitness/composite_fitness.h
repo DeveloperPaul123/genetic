@@ -16,6 +16,7 @@ namespace dp::genetic {
             for_each_tuple_impl(std::forward<TupleT>(tp), std::forward<Fn>(fn),
                                 std::make_index_sequence<TupSize>{});
         }
+
         /**
          * @brief A composite fitness function that allows you to chain together multiple fitness
          * functions with a custom binary operator to combine the results. By default, it uses
@@ -72,6 +73,11 @@ namespace dp::genetic {
 
     }  // namespace details
 
+    /**
+     * @brief Composite fitness function that sums the results of the fitness functions.
+     *
+     * @tparam Args The fitness functions to chain together.
+     */
     template <typename... Args>
     struct composite_sum_fitness : details::composite_base<Args...> {
         explicit composite_sum_fitness(Args... args) : details::composite_base<Args...>(args...) {}
@@ -83,6 +89,11 @@ namespace dp::genetic {
         }
     };
 
+    /**
+     * @brief Composite fitness function that subtracts the results of the fitness functions.
+     *
+     * @tparam Args The fitness functions to chain together.
+     */
     template <typename... Args>
     struct composite_difference_fitness : details::composite_base<Args...> {
         explicit composite_difference_fitness(Args... args)
@@ -95,6 +106,11 @@ namespace dp::genetic {
         }
     };
 
+    /**
+     * @brief Composite fitness function that multiplies the results of the fitness functions.
+     *
+     * @tparam Args The fitness functions to chain together.
+     */
     template <typename... Args>
     struct composite_product_fitness : details::composite_base<Args...> {
         explicit composite_product_fitness(Args... args)

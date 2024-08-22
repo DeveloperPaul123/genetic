@@ -69,14 +69,35 @@ namespace dp::genetic {
         };
     }  // namespace details
 
+    /**
+     * @brief Mutates a range of values by adding a random number within the bounds.
+     *
+     * @param lower_bound The lower bound of the random number.
+     * @param upper_bound The upper bound of the random number.
+     * @return The mutated value.
+     */
     inline auto double_value_mutator(double lower_bound, double upper_bound) {
         return details::value_mutation_op<double>{lower_bound, upper_bound};
     }
 
+    /**
+     * @brief Mutates a range of values by adding a random number within the bounds.
+     *
+     * @param lower_bound The lower bound of the random number.
+     * @param upper_bound The upper bound of the random number.
+     * @return The mutated value.
+     */
     inline auto float_value_mutator(float lower_bound, float upper_bound) {
         return details::value_mutation_op<float>{lower_bound, upper_bound};
     }
 
+    /**
+     * @brief Mutates a range of values by adding a random number within the bounds.
+     *
+     * @param lower_bound The lower bound of the random number.
+     * @param upper_bound The upper bound of the random number.
+     * @return The mutated value.
+     */
     template <std::integral Number>
     constexpr inline auto integral_value_mutator(Number lower_bound, Number upper_bound) {
         return details::value_mutation_op<Number>{lower_bound, upper_bound};

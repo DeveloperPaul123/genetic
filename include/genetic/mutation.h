@@ -14,8 +14,17 @@
 
 namespace dp::genetic {
 
+    /**
+     * @brief Mutate a value using the provided mutation operator.
+     *
+     * @tparam T The input value type.
+     * @tparam Mutator The mutation operator.
+     * @param mutator The mutation operator, takes in a value and returns a mutated value.
+     * @param input_value The input value to mutate.
+     * @return The mutated value.
+     */
     template <typename T, dp::genetic::concepts::mutation_operator<T> Mutator>
-    [[nodiscard]] constexpr auto mutate(Mutator&& mutator, const T& input_value) {
+    [[nodiscard]] constexpr T mutate(Mutator&& mutator, const T& input_value) {
         return std::invoke(std::forward<Mutator>(mutator), input_value);
     }
 }  // namespace dp::genetic

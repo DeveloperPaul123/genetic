@@ -12,6 +12,10 @@ namespace dp::genetic {
         };
     }  // namespace details
 
+    /**
+     * @brief Fitness termination criteria for case where fitness is greater than or equal to target
+     * fitness.
+     */
     using fitness_termination = details::fitness_termination_criteria_op;
 
 }  // namespace dp::genetic

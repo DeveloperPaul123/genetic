@@ -8,12 +8,22 @@
 
 namespace dp::genetic {
 
+    /**
+     * @brief Replaces a random value in the range with a new value.
+     */
     template <
         std::ranges::sized_range Range,
         dp::genetic::concepts::value_generator<std::ranges::range_value_t<Range>> ValueGenerator,
         dp::genetic::concepts::index_generator IndexGenerator =
             dp::genetic::uniform_integral_generator>
     struct value_replacement {
+        /**
+         * @brief Construct a new value replacement object with a given value generator and the
+         * number of replacements to make.
+         *
+         * @param generator A callable object that generates a new value.
+         * @param num_replacements The number of replacements to make.
+         */
         explicit value_replacement(const ValueGenerator& generator,
                                    std::uint_least64_t num_replacements = 1)
             : generator_(generator), number_of_replacements_(num_replacements) {}

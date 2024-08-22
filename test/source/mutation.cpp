@@ -19,8 +19,7 @@ static_assert(dp::genetic::concepts::mutation_operator<
 
 TEST_CASE("Value replacement mutator") {
     const std::string alphabet = R"(abcdefghijklmnopqrstuvwxyz)";
-    // TODO: Better CTAD
-    dp::genetic::pooled_value_generator<std::string> value_generator(alphabet);
+    dp::genetic::pooled_value_generator value_generator(alphabet);
     dp::genetic::value_replacement<std::string, dp::genetic::pooled_value_generator<std::string>>
         mutator(value_generator);
     const std::string value = "demo";
@@ -35,8 +34,7 @@ TEST_CASE("Value replacement mutator") {
 
 TEST_CASE("Value insertion mutator") {
     const std::string alphabet = R"(abcdefghijklmnopqrstuvwxyz)";
-    // TODO: better CTAD
-    dp::genetic::pooled_value_generator<std::string> value_generator(alphabet);
+    dp::genetic::pooled_value_generator value_generator(alphabet);
     dp::genetic::value_insertion_mutator<std::string> mutator(value_generator);
     const std::string value = "demo";
     const auto new_value = dp::genetic::mutate(mutator, value);

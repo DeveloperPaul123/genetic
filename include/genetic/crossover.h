@@ -24,6 +24,10 @@ namespace dp::genetic {
 
     }  // namespace details
 
+    /**
+     * @brief A helper function to create children from a crossover operator.
+     * @details Takes in a crossover operator, two parents and returns the children.
+     */
     inline auto make_children = details::make_children_fn{};
 
 }  // namespace dp::genetic

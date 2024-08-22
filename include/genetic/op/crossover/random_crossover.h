@@ -9,7 +9,8 @@ namespace dp::genetic {
     /**
      * @brief Randomly crosses over two parent ranges to produce a child range.
      * @details The pivot index (where the "splice" occurs) is randomly chosen using an
-     * IndexProvider which defaults to a uniform integral generator.
+     * IndexProvider which defaults to a uniform integral generator. If the parents are empty,
+     * the child will be default constructed.
      */
     struct random_crossover {
         template <std::ranges::range T, typename SimpleType = std::remove_cvref_t<T>,
@@ -20,9 +21,10 @@ namespace dp::genetic {
             const auto &first_size = std::ranges::distance(first);
             const auto &second_size = std::ranges::distance(second);
 
-            // TODO handle empty parents
             if (first_size == 0 || second_size == 0) {
+                return SimpleType{};
             }
+
             static thread_local IndexProvider index_provider{};
             const auto &first_pivot =
                 index_provider(static_cast<decltype(first_size)>(0), first_size);

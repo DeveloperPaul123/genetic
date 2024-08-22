@@ -1,9 +1,15 @@
 #pragma once
 
 namespace dp::genetic {
-    // TODO: constraint args to be mutation operators?
+    /**
+     * @brief Composite mutator that chains together multiple mutation operators.
+     *
+     * @tparam Args The mutation operators to chain together.
+     */
     template <typename... Args>
     struct composite_mutator {
+        // TODO: constraint args to be mutation operators?
+
       private:
         // list of mutators
         std::tuple<Args...> mutators_;

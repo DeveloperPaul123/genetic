@@ -4,6 +4,12 @@
 
 namespace dp::genetic {
 
+    /**
+     * @brief Fitness operator that compares two ranges element-wise.
+     * 
+     * @tparam Range The chromosome std::range type
+     * @tparam ScoreType
+     */
     template <std::ranges::range Range, typename ScoreType = double>
     struct element_wise_comparison {
         explicit element_wise_comparison(Range solution, ScoreType match_score)
