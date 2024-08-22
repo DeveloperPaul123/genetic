@@ -28,10 +28,10 @@ namespace dp::genetic {
             PopulationType, fitness_evaluation_type)>;
         /// @}
 
-        template <class FitnessOperator = accumulation_fitness,
-                  class MutationOperator = noop_mutator,
-                  class CrossoverOperator = default_crossover,
-                  class TerminationOperator = generations_termination_criteria,
+        template <class FitnessOperator = details::accumulation_fitness_op,
+                  class MutationOperator = no_op_mutator,
+                  class CrossoverOperator = random_crossover,
+                  class TerminationOperator = generations_termination,
                   class SelectionOperator = roulette_selection>
             requires concepts::mutation_operator<MutationOperator, ChromosomeType> &&
                          concepts::fitness_operator<FitnessOperator, ChromosomeType> &&
@@ -52,11 +52,11 @@ namespace dp::genetic {
               termination_(std::forward<TerminationOperator>(terminator)),
               selection_(std::forward<SelectionOperator>(selection_operator)) {}
 
-        [[nodiscard]] auto fitness_operator() const { return fitness_; }
-        [[nodiscard]] auto mutation_operator() const { return mutator_; }
-        [[nodiscard]] auto crossover_operator() const { return crossover_; }
-        [[nodiscard]] auto termination_operator() const { return termination_; }
-        [[nodiscard]] auto selection_operator() const { return selection_; }
+        [[nodiscard]] auto&& fitness_operator() const { return fitness_; }
+        [[nodiscard]] auto&& mutation_operator() const { return mutator_; }
+        [[nodiscard]] auto&& crossover_operator() const { return crossover_; }
+        [[nodiscard]] auto&& termination_operator() const { return termination_; }
+        [[nodiscard]] auto&& selection_operator() const { return selection_; }
         /// @brief builder class that helps with parameter construction
         class builder {
           public:
@@ -87,9 +87,9 @@ namespace dp::genetic {
                 return *this;
             }
 
-            builder& with_selection_operator(
-                dp::genetic::concepts::selection_operator<ChromosomeType, PopulationType> auto&&
-                    op) {
+            template <typename UnaryOp>
+            builder& with_selection_operator(dp::genetic::concepts::selection_operator<
+                                             ChromosomeType, PopulationType, UnaryOp> auto&& op) {
                 data_.selection_ = std::forward<decltype(op)>(op);
                 return *this;
             }

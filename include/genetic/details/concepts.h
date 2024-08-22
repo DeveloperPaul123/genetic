@@ -11,6 +11,12 @@ namespace dp::genetic {
         using element_type_t =
             std::remove_reference_t<decltype(*std::ranges::begin(std::declval<T &>()))>;
 
+        template <typename T>
+        constexpr inline bool is_std_array = false;
+
+        template <typename T, std::size_t N>
+        constexpr inline bool is_std_array<std::array<T, N>> = true;
+
         template <typename T, typename SimpleType = std::remove_cvref_t<T>>
         concept has_value_type = requires(SimpleType) { typename SimpleType::value_type; };
 
@@ -41,8 +47,13 @@ namespace dp::genetic {
         template <typename T>
         concept number = std::integral<T> || std::floating_point<T>;
 
-        template <typename T>
-        concept addable = requires(T first, T second) {
+        template <typename T, typename T2 = T>
+        concept addable = requires(T first, T2 second) {
+            { first + second } -> std::convertible_to<T>;
+        };
+
+        template <typename T, typename T2 = T>
+        concept subtractable = requires(T first, T2 second) {
             { first + second } -> std::convertible_to<T>;
         };
     }  // namespace type_traits
@@ -80,6 +91,10 @@ namespace dp::genetic {
             std::integral<std::remove_cvref_t<Index>> && requires(T &&t, Index &&l, Index &&u) {
                 { t(l, u) } -> std::convertible_to<std::remove_cvref_t<Index>>;
             };
+
+        template <typename Fn, typename ValueType>
+        concept value_generator =
+            std::invocable<Fn> && std::convertible_to<std::invoke_result_t<Fn>, ValueType>;
 
         template <typename Range, typename Chromosome,
                   typename T = type_traits::element_type_t<Range>>

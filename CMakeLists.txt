@@ -32,8 +32,8 @@ CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.6.0")
 CPMAddPackage(
     NAME thread-pool
     GITHUB_REPOSITORY DeveloperPaul123/thread-pool
-    VERSION 0.5.0
-    GIT_TAG 0.5.0
+    VERSION 0.6.2
+    GIT_TAG 0.6.2
     OPTIONS "TP_BUILD_TESTS OFF" "TP_BUILD_BENCHMARKS OFF" "TP_BUILD_EXAMPLES OFF"
 )
 
@@ -50,8 +50,8 @@ add_library(dp::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 message(STATUS "Compiler version: ${CMAKE_CXX_COMPILER_VERSION}")
 
 if((MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.32)
-   OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12
-      )
+   OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12)
+   OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 17)
 )
     option(DP_GENETIC_EXPERIMENTAL "Turn on experimental C++23 feature support" ON)
 endif()
@@ -101,7 +101,7 @@ if(${DP_GENETIC_BUILD_TESTS})
     add_subdirectory(test)
 endif()
 if(${DP_GENETIC_BUILD_EXAMPLES})
-    # add_subdirectory(examples)
+    add_subdirectory(examples)
 endif()
 if(${DP_GENETIC_BUILD_BENCHMARKS})
     # add_subdirectory(benchmark)

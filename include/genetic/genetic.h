@@ -30,6 +30,28 @@ namespace dp {
                     return cmp(std::get<double>(first), std::get<double>(second));
                 }
             };
+
+            struct elitism_op {
+                template <typename Population>
+                constexpr auto operator()(Population&& population,
+                                          std::size_t number_elitism) const {
+                    namespace vw = std::ranges::views;
+                    namespace rng = std::ranges;
+                    // no elitism, so return empty population
+                    if (number_elitism == 0) return vw::take(population, 0);
+
+                    // sort so that largest fitness item is at front
+                    rng::partial_sort(
+                        population,
+                        population.begin() + std::min(population.size(), number_elitism + 1),
+                        details::fitness_sort_op<std::greater<>>{});
+
+                    // select the first n in the current population
+                    return vw::take(population, number_elitism);
+                }
+            };
+
+            inline constexpr auto elitism = elitism_op{};
         }  // namespace details
 
         /// @brief Settings type for probabilities
@@ -52,6 +74,11 @@ namespace dp {
             std::size_t population_size{};
         };
 
+        template <typename Fitness>
+        struct problem_description {
+            Fitness fitness_op;
+        };
+
         template <typename PopulationType,
                   typename ChromosomeType = std::ranges::range_value_t<PopulationType>,
                   typename IterationCallback =
@@ -66,36 +93,23 @@ namespace dp {
             using chromosome_metadata = std::pair<ChromosomeType, double>;
             using population = std::vector<chromosome_metadata>;
             using iteration_stats = iteration_statistics<ChromosomeType>;
+            namespace vw = std::ranges::views;
+            namespace rng = std::ranges;
 
             static dp::thread_pool worker_pool{};
 
-            // Performs elitism selection on the current population
-            auto elitism = [](population& current_population, std::size_t number_elitism) {
-                // no elitism, so return empty population
-                if (number_elitism == 0) return std::ranges::views::take(current_population, 0);
-
-                // sort so that largest fitness item is at front
-                std::ranges::partial_sort(
-                    current_population,
-                    current_population.begin() +
-                        std::min(current_population.size(), number_elitism + 1),
-                    details::fitness_sort_op<std::greater<>>{});
-
-                // select the first n in the current population
-                return std::ranges::views::take(current_population, number_elitism);
-            };
-
             population current_population;
             // initialize our population
-            std::ranges::transform(
+            rng::transform(
                 initial_population, std::back_inserter(current_population),
                 [&](ChromosomeType value) {
-                    return chromosome_metadata{value, parameters.fitness_operator()(value)};
+                    return chromosome_metadata{
+                        value, dp::genetic::evaluate_fitness(parameters.fitness_operator(), value)};
                 });
             // sort by fitness
-            std::ranges::sort(current_population, details::fitness_sort_op{});
+            rng::sort(current_population, details::fitness_sort_op{});
 
-            auto best_element = *std::ranges::max_element(
+            auto best_element = *rng::max_element(
                 current_population, [](const std::pair<ChromosomeType, double>& first,
                                        const std::pair<ChromosomeType, double>& second) {
                     return std::get<double>(first) < std::get<double>(second);
@@ -103,15 +117,17 @@ namespace dp {
 
             iteration_stats stats{};
             stats.current_best.best = std::get<ChromosomeType>(best_element);
+            stats.current_best.fitness = std::get<double>(best_element);
 
-            while (!parameters.termination_operator()(std::get<ChromosomeType>(best_element),
-                                                      std::get<double>(best_element))) {
+            while (!dp::genetic::should_terminate(parameters.termination_operator(),
+                                                  std::get<ChromosomeType>(best_element),
+                                                  std::get<double>(best_element))) {
                 auto number_elitism = static_cast<std::size_t>(std::round(
                     static_cast<double>(current_population.size()) * settings.elitism_rate));
                 // perform elitism selection if it is enabled
                 if (number_elitism == 0 && settings.elitism_rate > 0.0) number_elitism = 2;
                 // generate elite population
-                auto elite_population = elitism(current_population, number_elitism);
+                auto elite_population = details::elitism(current_population, number_elitism);
 
                 // cross over
                 auto crossover_number = static_cast<std::size_t>(std::round(
@@ -131,21 +147,29 @@ namespace dp {
                                 // randomly select 2 parents
                                 auto chromosomes_only_view = pop | std::views::elements<0> |
                                                              std::ranges::to<PopulationType>();
-                                auto [parent1, parent2] = prms.selection_operator()(
-                                    chromosomes_only_view, prms.fitness_operator());
+                                auto [parent1, parent2] = dp::genetic::select_parents(
+                                    prms.selection_operator(), chromosomes_only_view,
+                                    [&prms](const auto& values) {
+                                        return genetic::evaluate_fitness(prms.fitness_operator(),
+                                                                         values);
+                                    });
 
                                 // generate two children from each parent sets
-                                auto child1 = prms.crossover_operator()(parent1, parent2);
-                                auto child2 = prms.crossover_operator()(parent2, parent1);
+                                auto child1 = dp::genetic::make_children(prms.crossover_operator(),
+                                                                         parent1, parent2);
+                                auto child2 = dp::genetic::make_children(prms.crossover_operator(),
+                                                                         parent2, parent1);
 
                                 // mutate the children
-                                child1 = prms.mutation_operator()(child1);
-                                child2 = prms.mutation_operator()(child2);
+                                child1 = dp::genetic::mutate(prms.mutation_operator(), child1);
+                                child2 = dp::genetic::mutate(prms.mutation_operator(), child2);
 
                                 // return the result + their fitness
                                 return std::make_pair(
-                                    std::make_pair(child1, prms.fitness_operator()(child1)),
-                                    std::make_pair(child2, prms.fitness_operator()(child2)));
+                                    std::make_pair(child1, dp::genetic::evaluate_fitness(
+                                                               prms.fitness_operator(), child1)),
+                                    std::make_pair(child2, dp::genetic::evaluate_fitness(
+                                                               prms.fitness_operator(), child2)));
                             },
                             parameters, current_population);
                     future_results.emplace_back(std::move(future));
@@ -160,14 +184,14 @@ namespace dp {
                     crossover_population.push_back(child2);
                 }
 
-                if (!std::ranges::empty(elite_population)) {
-                    // add elite population
+                if (!rng::empty(elite_population)) {
+                    // add elite population directly to new population
                     crossover_population.insert(crossover_population.end(),
                                                 elite_population.begin(), elite_population.end());
                 }
 
                 // sort crossover population by fitness (lowest first)
-                std::ranges::sort(crossover_population, details::fitness_sort_op{});
+                rng::sort(crossover_population, details::fitness_sort_op{});
 
                 // reset the current population
                 current_population.clear();
@@ -175,7 +199,17 @@ namespace dp {
                 current_population = std::move(crossover_population);
 
                 // update the best element
-                best_element = *std::ranges::max_element(current_population);
+                auto temp_best_element = *rng::max_element(current_population);
+                const auto [element, best_fitness] = temp_best_element;
+                const auto previous_best_fitness = std::get<double>(best_element);
+                if (std::abs(best_fitness - previous_best_fitness) > 0.0) {
+                    // better fitness
+                    best_element = temp_best_element;
+                } else {
+                    // current best did not improve previous best
+                    // insert previous best into the current population
+                    if (!current_population.empty()) current_population[0] = best_element;
+                }
 
                 // send callback stats for each generation
                 stats.current_best.best = std::get<ChromosomeType>(best_element);
@@ -187,6 +221,24 @@ namespace dp {
 
             return {std::get<ChromosomeType>(best_element), std::get<double>(best_element)};
         }
+
+        namespace experimental {
+            template <typename PopulationType,
+                      typename ChromosomeType = std::ranges::range_value_t<PopulationType>>
+                requires std::default_initializable<ChromosomeType> &&
+                         concepts::population<PopulationType, ChromosomeType>
+            struct solve_impl {
+                template <typename ScoreType>
+                std::pair<ChromosomeType, ScoreType> operator()(
+                    const PopulationType& initial_population, auto&& description) const {
+                    // TODO solve the actual problem
+                    return {};
+                }
+            };
+
+            template <typename Population>
+            inline constexpr auto solve_problem = solve_impl<Population>{};
+        }  // namespace experimental
     }  // namespace genetic
 
 }  // namespace dp

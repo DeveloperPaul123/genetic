@@ -1,7 +1,21 @@
+#include <doctest/doctest.h>
 #include <genetic/details/concepts.h>
 #include <genetic/termination.h>
 
-static_assert(dp::genetic::concepts::termination_operator<
-              dp::genetic::generations_termination_criteria, std::string, double>);
-static_assert(dp::genetic::concepts::termination_operator<dp::genetic::fitness_termination_criteria,
-                                                          std::string, double>);
+TEST_CASE("Generations termination") {
+    std::string chromosome{};
+    auto termination = dp::genetic::generations_termination(1234);
+    std::uint64_t count{1};
+    while (!dp::genetic::should_terminate(termination, chromosome, 0.0)) {
+        ++count;
+    }
+
+    CHECK_EQ(count, termination.max_generations);
+}
+
+TEST_CASE("Fitness termination") {
+    std::string chromosome{};
+    auto fitness_term = dp::genetic::fitness_termination{100.};
+    CHECK(dp::genetic::should_terminate(fitness_term, chromosome, 110.0));
+    CHECK_FALSE(dp::genetic::should_terminate(fitness_term, chromosome, 99.99));
+}
